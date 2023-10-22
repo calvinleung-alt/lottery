@@ -13,13 +13,11 @@ export class TicketService {
         if (!game) {
             return null;
         }
-        const ticket = await Ticket.findOne({ 
-            contestantId: new Types.ObjectId(dto.contestantId), 
-            gameId: game._id 
-        });
-        if (ticket) {
+        const params = { contestantId: new Types.ObjectId(dto.contestantId), gameId: game._id  };
+        const ticket = await Ticket.findOne(params);
+        if (ticket !== null) {
             return ticket;
         }
-        return Ticket.create({ contestantId: new Types.ObjectId(dto.contestantId), gameId: game.id });
+        return Ticket.create(params);
     }
 }

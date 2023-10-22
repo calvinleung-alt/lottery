@@ -13,28 +13,32 @@ export class GameService {
     }
 
     findRecentGame = async () => {
-        return GameService.findByStatus("stop_selling", "recent");
+        return GameService.findByStatus("recent");
     }
 
     findCompletedGame = async () => {
         return GameService.findByStatus("completed");
     }
 
+    findRecentOrStopSellingGame = async () => {
+        return GameService.findByStatus("recent", "stop_selling");
+    }
+
     init = async () => {
-        const game = await this.findRecentGame();
-        if (game) {
+        const game = await this.findRecentOrStopSellingGame();
+        if (game !== null) {
             return game;
         }
         return Game.create({ status: "recent" });
     }
 
     draw = async () => {
-        const game = await this.findRecentGame();
+        const game = await this.findRecentOrStopSellingGame();
         if (!game) {
             throw new Error("game is not found");
         }
 
-        const ticketsCount = await Ticket.count({ gameId: game.id }).exec();
+        const ticketsCount = await Ticket.count({ gameId: game._id }).exec();
         if (ticketsCount === 0) {
             throw new Error("ticket count is zero");
         }
@@ -43,7 +47,8 @@ export class GameService {
             await game.updateOne({ status: "stop_selling" });
         }
 
-        const winnerTicket = await Ticket.findOne({ gameId: game.id }).skip(randomInt(ticketsCount)).exec();
+        const randomOffset = randomInt(ticketsCount);
+        const winnerTicket = await Ticket.findOne({ gameId: game._id }).skip(randomOffset).exec();
         const contestant = await Contestant.findById(winnerTicket?.contestantId).exec();
 
         game.status = "completed";
@@ -52,11 +57,11 @@ export class GameService {
         game.drawDate = new Date();
         await game.save();
 
-        const recentGame = await Game.create({ status: "recent" });
+        const nextRecentGame = await Game.create({ status: "recent" });
 
         return {
             completedGame: game,
-            recentGame
+            recentGame: nextRecentGame
         };
     }
 }
