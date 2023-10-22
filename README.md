@@ -31,6 +31,11 @@ npm install
 npm run build
 ```
 
+### Start Application
+```
+npm run start
+```
+
 ### Development
 ```
 npm run dev
