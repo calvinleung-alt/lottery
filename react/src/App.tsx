@@ -10,6 +10,7 @@ import {
     fetchNextDrawDate,
     fetchCompletedGame
 } from "./fetcher";
+import { faker } from "@faker-js/faker";
 
 export const App = () => {
     const [games, setGames] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export const App = () => {
     const [contestants, setContestants] = useState<any[]>([]);
     const [contestant, setContestant] = useState<any>({ name: "" });
     const [ticket, setTicket] = useState<any>({ contestantId: "" });
+    const [contestantSeed, setContestantSeed] = useState<any>({ count: 0 });
     const [recentGame, setRecentGame] = useState<any>({});
     const [completedGame, setCompletedGame] = useState<any>({});
     const [nextDrawDate, setNextDrawDate] = useState<any>(null);
@@ -66,8 +68,8 @@ export const App = () => {
     }
 
     const handleSeedContestants = async () => {
-        await Promise.all(Array.from({ length: 10 }).map((_, name) => {
-            return createContestant({ name: `${name}` });
+        await Promise.all(Array.from({ length: contestantSeed.count }).map(() => {
+            return createContestant({ name: faker.internet.userName() });
         }))
         await handleFetchContestants();
     }
@@ -78,6 +80,10 @@ export const App = () => {
 
     const setContestantName = (ev: any) => {
         setContestant({ name: ev.target.value });
+    }
+
+    const setContestantSeedCount = (ev: any) => {
+        setContestantSeed({ count: parseInt(ev.target.value) });
     }
 
     const init = async () => {
@@ -101,6 +107,7 @@ export const App = () => {
             await handleFetchGames();
         });
         socket.on("game.draw.completedGame", async (completedGame) => {
+            alert(JSON.stringify({ message: "draw is completed" }));
             setCompletedGame(JSON.parse(completedGame));
             await handleFetchGames();
         });
@@ -148,8 +155,10 @@ export const App = () => {
             <Form
                 name="Seed Contestant"
                 onSubmit={handleSeedContestants}
-                data={[]}
-                inputs={() => null}
+                data={[contestantSeed]}
+                inputs={() => (
+                    <input type="number" onChange={setContestantSeedCount} />
+                )}
             />
             <Form
                 name="Buy Tickets"
