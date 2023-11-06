@@ -24,5 +24,4 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 COPY --from=builder /usr/src/app/public ./public
 
-EXPOSE 8080
 CMD ["node", "./dist/index.js"]

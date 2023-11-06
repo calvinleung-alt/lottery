@@ -7,7 +7,6 @@ import {
     createContestant, 
     buyTicket,
     fetchRecentGame,
-    fetchNextDrawDate,
     fetchCompletedGame
 } from "./fetcher";
 import { faker } from "@faker-js/faker";
@@ -21,9 +20,7 @@ export const App = () => {
     const [contestantSeed, setContestantSeed] = useState<any>({ count: 0 });
     const [recentGame, setRecentGame] = useState<any>({});
     const [completedGame, setCompletedGame] = useState<any>({});
-    const [nextDrawDate, setNextDrawDate] = useState<any>(null);
     const [error, setError] = useState<any>(null);
-    const [timer, setTimer] = useState<number>(0);
     const [socket, _] = useState(io());
 
     const handleFetchGames = async () => {
@@ -44,10 +41,6 @@ export const App = () => {
 
     const handleFetchCompletedGame = async () => {
         setCompletedGame(await fetchCompletedGame());
-    }
-
-    const handleFetchNextDrawDate = async () => {
-        setNextDrawDate(await fetchNextDrawDate());
     }
 
     const handleCreateContestant = async () => {
@@ -93,7 +86,6 @@ export const App = () => {
             handleFetchContestants(),
             handleFetchRecentGame(),
             handleFetchCompletedGame(),
-            handleFetchNextDrawDate(),
         ]) 
     }
 
@@ -111,33 +103,13 @@ export const App = () => {
             setCompletedGame(JSON.parse(completedGame));
             await handleFetchGames();
         });
-        socket.on("game.draw.nextDrawDate", (nextDrawDate) => {
-            setNextDrawDate(JSON.parse(nextDrawDate));
-        });
         socket.on("game.draw.failed", (error) => {
             setError(JSON.parse(error));
         });
     }, []);
 
-    useEffect(() => {
-        setInterval(() => {
-            if (!nextDrawDate) {
-                return;
-            }
-            const next = new Date(nextDrawDate.nextDrawDate);
-            const now = new Date();
-            const diff = next.getTime() - now.getTime();
-            if (diff < 0) {
-                return;
-            }
-            setTimer(Math.round(diff/1000));
-        }, 1000);
-    }, [nextDrawDate]);
-
     return (
         <div>
-            <Data name="Timer" data={[{ timer }]} />
-            <Data name="Next Draw Date" data={[nextDrawDate]} />
             <Data name="Recent Game" data={[recentGame]}/>
             <Data name="Last Completed Game" data={[completedGame]}/>
             <Data name="Error" data={[error]}/>

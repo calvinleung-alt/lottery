@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: app
+        image: kcleung235/lottery:latest
+        ports:
+          - containerPort: 8080
+        env:
+          - name: MG_URI
+            value: mongodb://root:secret@10.102.9.60:27017
+          - name: MG_DBNAME
+            value: lottery
+          - name: X_SECOND
+            value: "15"
+          - name: PORT
+            value: "8080"

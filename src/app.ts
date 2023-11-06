@@ -9,7 +9,6 @@ import { GameService } from "./games/service";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import path from "path";
-import { GameCronJob } from "./games/cronjob";
 
 export class App {
     static build = async () => {
@@ -19,13 +18,11 @@ export class App {
         const server = createServer(app);
         const io = new Server(server);
         const port = process.env.PORT || 8080;
-        const xSecond = parseInt(process.env.X_SECOND || "60");
 
         const ticketService = new TicketService();
         const ticketController = new TicketController(ticketService);
         const gameService = new GameService();
-        const gameCronJob = new GameCronJob(io, gameService, { xSecond });
-        const gameController = new GameController(gameService, gameCronJob);
+        const gameController = new GameController(io, gameService);
         const contestantController = new ContestantController();
 
         app.use(bodyParser.json());
@@ -39,7 +36,8 @@ export class App {
         app.get("/api/games", gameController.findAll);
         app.get("/api/games/recent", gameController.findRecent);
         app.get("/api/games/completed", gameController.findCompleted);
-        app.get("/api/games/nextDrawDate", gameController.findNextDrawDate);
+        app.post("/api/games/draw", gameController.draw);
+        app.post("/api/games/init", gameController.init);
 
         app.get("/", (_, res) => {
             res.sendFile(path.join(__dirname, "..", "public", "index.html"));
@@ -47,9 +45,9 @@ export class App {
 
         server.listen(port, () => {
             console.log(`server starts at port: ${port}`);
-        });;
+        });
 
-        await gameCronJob.schedule();
+        await fetch("/api/games/init", { method: "POST" });
 
         return server;
     }

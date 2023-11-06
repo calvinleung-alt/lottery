@@ -21,10 +21,6 @@ const fetchCompletedGame = async () => {
     return fetchx("/api/games/completed");
 }
 
-const fetchNextDrawDate = async () => {
-    return fetchx("/api/games/nextDrawDate");
-}
-
 const fetchContestants = async () => {
     return fetchx("/api/contestants");
 }
@@ -53,7 +49,6 @@ export {
     fetchTickets,
     fetchRecentGame,
     fetchCompletedGame,
-    fetchNextDrawDate,
     createContestant,
     buyTicket,
 }
